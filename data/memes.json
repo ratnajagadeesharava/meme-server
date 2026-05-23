@@ -1,0 +1,34 @@
+{
+  "memes": [
+    {
+      "id": "i7bSgY7cyo",
+      "title": "Placement Cell Trauma",
+      "imageFilename": "i7bSgY7cyo.png",
+      "templateId": "pov-meme",
+      "layers": [],
+      "reactions": {
+        "laugh": 0,
+        "fire": 0,
+        "skull": 0,
+        "love": 0,
+        "mindblown": 0
+      },
+      "createdAt": "2026-05-23T09:58:39.473Z"
+    },
+    {
+      "id": "Cs8zluJfzC",
+      "title": "Corporate Slavery Energy",
+      "imageFilename": "Cs8zluJfzC.png",
+      "templateId": "pov-meme",
+      "layers": [],
+      "reactions": {
+        "laugh": 0,
+        "fire": 1,
+        "skull": 1,
+        "love": 0,
+        "mindblown": 0
+      },
+      "createdAt": "2026-05-23T09:57:17.522Z"
+    }
+  ]
+}

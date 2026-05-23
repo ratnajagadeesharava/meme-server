@@ -1,13 +1,18 @@
 import dotenv from 'dotenv'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-dotenv.config({ path: '.env.local' })
-dotenv.config()
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// Prefer server/.env*, fall back to repo root for local monorepo dev
+for (const envFile of ['.env.local', '.env']) {
+  dotenv.config({ path: path.join(__dirname, envFile) })
+  dotenv.config({ path: path.join(__dirname, '..', envFile) })
+}
 
 import express from 'express'
 import cors from 'cors'
 import { nanoid } from 'nanoid'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import {
   deleteMemeById,
   getMemeById,
@@ -26,7 +31,11 @@ import {
   UPLOADS_DIR,
 } from './fileStorage.js'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+function parseFrontendOrigins() {
+  const raw = process.env.FRONTEND_URL?.trim()
+  if (!raw) return undefined
+  return raw.split(',').map((s) => s.trim()).filter(Boolean)
+}
 
 function memeToApi(meme, { includeLayers = false } = {}) {
   const imageUrl = imagePathFromFilename(meme.imageFilename)
@@ -54,7 +63,22 @@ function memeToApi(meme, { includeLayers = false } = {}) {
 // ── app ──────────────────────────────────────────────────────────────────────
 
 const app = express()
-app.use(cors())
+const allowedOrigins = parseFrontendOrigins()
+app.use(
+  cors(
+    allowedOrigins
+      ? {
+          origin(origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+              callback(null, true)
+            } else {
+              callback(new Error('Not allowed by CORS'))
+            }
+          },
+        }
+      : {},
+  ),
+)
 app.use(express.json({ limit: '50mb' }))
 app.use('/uploads', express.static(UPLOADS_DIR))
 
@@ -187,8 +211,11 @@ await ensureUploadsDir()
 
 app.listen(PORT, () => {
   console.log(`🚀 Meme server  →  http://localhost:${PORT}`)
-  console.log(`   DB: server/data/memes.json`)
-  console.log(`   Images: server/uploads/{id}.png`)
+  console.log(`   DB: data/memes.json`)
+  console.log(`   Images: uploads/{id}.png`)
+  if (allowedOrigins?.length) {
+    console.log(`   CORS: ${allowedOrigins.join(', ')}`)
+  }
   console.log(`   GET  /api/memes`)
   console.log(`   POST /api/memes`)
   console.log(`   GET  /api/memes/:id`)

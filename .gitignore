@@ -1,0 +1,8 @@
+node_modules
+.env
+.env.local
+
+data/memes.json
+data/memes.db
+uploads/*
+!uploads/.gitkeep
